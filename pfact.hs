@@ -62,7 +62,9 @@ pollardsRhoPermute n s t
         p = pRho n s s c
 
 pfact :: (Show s, Integral s) => s -> s -> [s]
-pfact n s = sort . factorize n $ s
+pfact n s
+  | n < 2 = [n]
+  | otherwise = sort . factorize n $ s
 
 factorize :: Integral a => a -> a -> [a]
 factorize n s
@@ -73,8 +75,10 @@ factorize n s
   | otherwise = factorize z s ++ factorize (quot n z) s
   where z = pollardsRhoPermute n s 1
 
-pretty :: (Show a, Eq a) => [a] -> String
-pretty x = prettyR x 1
+pretty :: (Show a, Eq a, Num a) => [a] -> String
+pretty x
+  | x == [0] || x == [1] = show x ++ " is neither prime nor composite and therefore has no prime factorization"
+  | otherwise = prettyR x 1
 
 prettyR :: (Show a1, Show a, Ord a, Num a, Eq a1) => [a1] -> a -> String
 prettyR [x] 1 = show x
