@@ -42,9 +42,6 @@ pRange a b s
   where r = lcgLehmer s
         c = r `mod` (safeMod b)
 
-
-
-
 -- A simple set of tests for determining the period of a given 
 -- pseudorandom generating function f. The length of the period
 -- is output. The postfix integer represents the number of

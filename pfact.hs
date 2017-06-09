@@ -14,6 +14,8 @@ import Data.List
 import Data.Maybe
 import System.Console.CmdArgs
 
+import SafeRand
+
 --import Debug.Trace
 --debug = (flip trace) False
 
@@ -36,9 +38,7 @@ main = do
   putStrLn . pretty . pfact num $ seed
 
 pcycle :: Integral a => a -> a -> a -> a
-pcycle x a N = (x^2 + a) `mod` N
-
-
+pcycle x a n = (x^2 + a) `mod` n
 
 pRho :: Integral a => a -> a -> a -> a -> Maybe a
 pRho n x y c
@@ -58,8 +58,8 @@ pollardsRhoPermute n s t
   | t == 5 = n
   | p == Nothing = pollardsRhoPermute n c (t + 1) -- Pollard's Rho failed so permute the constant and try again
   | otherwise = fromJust p
-  where c = lcg_lehmer s
-        p = pollardsRho n s s c
+  where c = lcgLehmer s
+        p = pRho n s s c
 
 pfact :: (Show s, Integral s) => s -> s -> [s]
 pfact n s = sort . factorize n $ s
