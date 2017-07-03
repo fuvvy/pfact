@@ -12,46 +12,45 @@ module Main where
 import Prelude
 import Data.List
 import Data.Maybe
-import System.Console.CmdArgs
+--import System.Console.CmdArgs
 
 import SafeRand
+import Primality
 
 --import Debug.Trace
 --debug = (flip trace) False
 
-data Options = Options {
-    num :: Integer,
-    seed :: Integer
-} deriving (Show, Data, Typeable)
+--data Options = Options {
+--    num :: Integer,
+--    seed :: Integer
+--} deriving (Show, Data, Typeable)
 
-options :: Options
-options = Options {
-   num = 1 &= argPos 0 &= typ "NUMBER",
-  seed = 2 &= typ "SEED" &= name "s" &= help "Provide your own seed"
-}
-  &= summary "pfact v0.1, Finds the prime decomposition of a given number."
-  &= program "pfact"
+--options :: Options
+--options = Options {
+--   num = 1 &= argPos 0 &= typ "NUMBER",
+--  seed = 2 &= typ "SEED" &= name "s" &= help "Provide your own seed"
+--}
+--  &= summary "pfact v0.1, Finds the prime decomposition of a given number."
+--  &= program "pfact"
 
 main :: IO ()
 main = do
-  Options{..} <- cmdArgs options
-  putStrLn . pretty . pfact num $ seed
+--  Options{..} <- cmdArgs options
+--  putStrLn . pretty . pfact num $ seed
+  let p = 2^86243-1 in putStrLn . show . isPrime $ p
 
-pcycle :: Integral a => a -> a -> a -> a
-pcycle x a n = (x^2 + a) `mod` n
-
-pRho :: Integral a => a -> a -> a -> a -> Maybe a
+pRho :: Integer -> Integer -> Integer -> Integer -> Maybe Integer
 pRho n x y c
 --  | debug ("(pRho " ++ show n ++ " " ++ show x ++ " " ++ show y ++
 --           ") -> a = " ++ show a ++ " b = " ++ show b) = undefined
   | a == b    = Nothing
   | p > 1     = Just p
   | otherwise = pRho n a b c  -- p == 1
-  where a = pcycle x c n
-        b = pcycle (pcycle y c n) c n
+  where a = q1Cycle x c n
+        b = q1Cycle (q1Cycle y c n) c n
         p = gcd (abs (b - a)) n
 
-pollardsRhoPermute :: Integral a => a -> a -> a -> a
+pollardsRhoPermute :: Integer -> Integer -> Integer -> Integer
 pollardsRhoPermute n s t
 --  | debug ("(pollardsRhoPermute " ++ show n ++ " " ++ show s ++ " " ++ show t ++
 --           ") -> c = " ++ show c ++ " p = " ++ show p) = undefined
@@ -61,12 +60,7 @@ pollardsRhoPermute n s t
   where c = lcgLehmer s
         p = pRho n s s c
 
-pfact :: (Show s, Integral s) => s -> s -> [s]
-pfact n s
-  | n < 2 = [n]
-  | otherwise = sort . factorize n $ s
-
-factorize :: Integral a => a -> a -> [a]
+factorize :: Integer -> Integer -> [Integer]
 factorize n s
 --  | debug ("*** factorize n = " ++ show n) = undefined
   | even n = [2] ++ factorize (quot n 2) s
@@ -74,16 +68,21 @@ factorize n s
   | n == z = [n]
   | otherwise = factorize z s ++ factorize (quot n z) s
   where z = pollardsRhoPermute n s 1
+  
+pfact :: Integer -> Integer -> [Integer]
+pfact n s
+  | n < 2 = [n]
+  | otherwise = sort . factorize n $ s
+
+pretty' :: (Show a1, Show a, Ord a, Num a, Eq a1) => [a1] -> a -> String
+pretty' [x] 1 = show x
+pretty' [x] c = show x ++ "^" ++ show c
+pretty' (x:y:xs) c
+  | x /= y && c > 1 = show x ++ "^" ++ show c ++ " x " ++ pretty' (y:xs) 1
+  | x /= y = show x ++ " x " ++ pretty' (y:xs) 1
+  | otherwise = pretty' (y:xs) (c+1)
 
 pretty :: (Show a, Eq a, Num a) => [a] -> String
 pretty x
   | x == [0] || x == [1] = show x ++ " is neither prime nor composite and therefore has no prime factorization"
-  | otherwise = prettyR x 1
-
-prettyR :: (Show a1, Show a, Ord a, Num a, Eq a1) => [a1] -> a -> String
-prettyR [x] 1 = show x
-prettyR [x] c = show x ++ "^" ++ show c
-prettyR (x:y:xs) c
-  | x /= y && c > 1 = show x ++ "^" ++ show c ++ " x " ++ prettyR (y:xs) 1
-  | x /= y = show x ++ " x " ++ prettyR (y:xs) 1
-  | otherwise = prettyR (y:xs) (c+1)
+  | otherwise = pretty' x 1
