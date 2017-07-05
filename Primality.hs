@@ -3,9 +3,6 @@ module Primality ( prime, Primality(..) ) where
 import Prelude
 import SafeRand
 
---import Debug.Trace
---debug = (flip trace) False
-
 rounds = 1
 data Primality = Composite | ProbablyPrime | Continue deriving (Show, Eq, Enum)
 
@@ -80,7 +77,6 @@ getRD n = getRD' n 1
       
 innerLoop :: Integer -> Integer -> Integer -> Primality
 innerLoop n x r
---  | debug ("innerLoop " ++ show n ++ " " ++ show x ++ " " ++ show r) = undefined
   | r == 0 || y == 1  = Composite
   | y == n-1          = Continue
   | otherwise         = innerLoop n y (r-1)
@@ -88,7 +84,6 @@ innerLoop n x r
   
 witnessLoop :: Integer -> Integer -> Integer -> Integer -> Integer -> Primality
 witnessLoop n r d s k
---  | debug ("witnessLoop " ++ show n ++ " " ++ show r ++ " " ++ show d ++ " " ++ show s ++ " " ++ show k) = False
   | k == 0                              = ProbablyPrime
   | x == 1 || x == n-1 || l == Continue = (witnessLoop n r d) t $ k-1
   | otherwise                           = Composite

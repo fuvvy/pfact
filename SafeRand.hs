@@ -7,9 +7,6 @@ module SafeRand (
   
 import Data.Bits
 
---import Debug.Trace
---debug = (flip trace) False
-
 -- A basic implementation of the Lehmer pseudo-random number generator
 -- which is a linear congruential generator. Make initial call with a
 -- seed value and the functions output should be fed back into its input.
@@ -19,7 +16,6 @@ lcgLehmer a
   | otherwise = 48271*a `mod` 2147483647
 
 safeMod' :: Integer -> Integer -> Integer
---safeMod' n p | trace ("safeMod' " ++ show n ++ " " ++ show p) False = undefined
 safeMod' n p
   | 2^p > n = 2^p
   | otherwise = safeMod' n $ p+1

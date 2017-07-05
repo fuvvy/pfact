@@ -7,6 +7,9 @@ import Data.Maybe
 import SafeRand
 import Primality
 
+--import Debug.Trace
+--debug = (flip trace) False
+
 rounds = 5
 
 -- Generator functions
@@ -31,6 +34,7 @@ prho' n x y
 
 prho :: Integer -> Integer -> Integer -> Integer
 prho n s t
+--prho n s t | trace ("prho " ++ show n ++ " " ++ show s ++ " " ++ show t) False = undefined
   | t == 0 = n
   | q == ProbablyPrime = n
   | p == Nothing = prho n (lcgLehmer s) $ t-1 -- Pollard's Rho failed so permute the constant and try again
@@ -41,7 +45,6 @@ prho n s t
 factorize :: Integer -> Integer -> [Integer]
 factorize n s
   | even n                    = [2] ++ factorize (quot n 2) s
---  | prime n s == ProbablyPrime  = [n]
   | n == 1                    = [ ]
   | n == z                    = [n]
   | otherwise                 = factorize z s ++ factorize (quot n z) s
