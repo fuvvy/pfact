@@ -1,12 +1,12 @@
-module Primality ( isPrime ) where
+module Primality ( prime, Primality(..) ) where
 
 import Prelude
---import Debug.Trace
-
 import SafeRand
 
+--import Debug.Trace
 --debug = (flip trace) False
 
+rounds = 1
 data Primality = Composite | ProbablyPrime | Continue deriving (Show, Eq, Enum)
 
 ----------------------------------------
@@ -104,7 +104,8 @@ millerRabin' p s k =
   
 -- Test with:
 -- map primalityMillerRabin (take 50 $ filter odd [5..])
-millerRabin p = millerRabin' p (lcgLehmer p) 1
+millerRabin :: Integer -> Integer -> Primality
+millerRabin p s = millerRabin' p s rounds
   
-isPrime :: Integer -> Primality
-isPrime p = if even p then Composite else millerRabin p
+prime :: Integer -> Integer -> Primality
+prime p s = if even p then Composite else millerRabin p s

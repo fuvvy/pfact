@@ -1,6 +1,4 @@
 module SafeRand (
-  q1Cycle,
-  q2Cycle,
   lcgLehmer,
   modExp,
   safeRange,
@@ -11,13 +9,6 @@ import Data.Bits
 
 --import Debug.Trace
 --debug = (flip trace) False
-
--- Pseudorandom orbits over the quadratic residues modulo N
-q1Cycle :: Integer -> Integer -> Integer -> Integer
-q1Cycle b a m = (b^2 + a) `mod` m
-
-q2Cycle :: Integer -> Integer -> Integer
-q2Cycle b m = (b^2 - 1) `mod` m
 
 -- A basic implementation of the Lehmer pseudo-random number generator
 -- which is a linear congruential generator. Make initial call with a
@@ -56,7 +47,7 @@ safeRange a b s
         
 -- Pseudorandom numbers in the range [a,b] given seed 's'
 -- Map seed into the desired range using a modulus
--- Could introduce biasl
+-- Could introduce bias
 riskRange :: Integer -> Integer -> Integer -> Integer
 riskRange a b s =
   let n = b - a + 1
