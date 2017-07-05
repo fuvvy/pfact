@@ -16,7 +16,7 @@ Take the composite integer `3895462145894328`, for example:
 
 Compile with `-O2` and multi-core optimizations:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`ghc -O2 -threaded --make "pfact.hs"`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`ghc -o pfact -O2 -threaded Main.hs`
 
 ## Running
 
