@@ -15,13 +15,13 @@ rounds = 5
 -- Generator functions
 -- Pseudorandom orbits over the quadratic residues modulo N
 generatora :: Integer -> Integer -> Integer -> Integer
-generatora b a m = (b^2 + a) `mod` m
+generatora b a m = (b^2 + a) `rem` m
 
 generatorb :: Integer -> Integer -> Integer
-generatorb b m = (b^2 - 1) `mod` m
+generatorb b m = (b^2 - 1) `rem` m
 
 generatorc :: Integer -> Integer -> Integer
-generatorc b m = (b^2 + 1) `mod` m
+generatorc b m = (b^2 + 1) `rem` m
 
 prho' :: Integer -> Integer -> Integer -> Maybe Integer
 prho' n x y
@@ -44,10 +44,10 @@ prho n s t
 
 factorize :: Integer -> Integer -> [Integer]
 factorize n s
-  | even n                    = [2] ++ factorize (quot n 2) s
-  | n == 1                    = [ ]
-  | n == z                    = [n]
-  | otherwise                 = factorize z s ++ factorize (quot n z) s
+  | even n    = [2] ++ factorize (quot n 2) s
+  | n == 1    = [ ]
+  | n == z    = [n]
+  | otherwise = factorize z s ++ factorize (quot n z) s
   where z = prho n s rounds
   
 pfact :: Integer -> Integer -> [Integer]

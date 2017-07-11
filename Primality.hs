@@ -4,7 +4,7 @@ import Prelude
 import SafeRand
 
 rounds = 1
-data Primality = Composite | ProbablyPrime | Continue deriving (Show, Eq, Enum)
+data Primality = Composite | ProbablyPrime | Prime | Continue deriving (Show, Eq, Enum)
 
 ----------------------------------------
 -- PSW Primality Test related functions
@@ -15,7 +15,7 @@ fibsT :: Integer -> Integer -> Integer -> Integer
 fibsT n a b = 
   if n == 0
     then a
-    else fibsT (n-1) b (a+b)
+    else fibsT (n-1) b $ a+b
 
 fibs :: Integer -> Integer
 fibs n = fibsT n 0 1
@@ -46,7 +46,7 @@ fermatTest n =
 fibsTest :: Integer -> Bool
 fibsTest p =
   let q = fibs p+1
-      r = q `mod` p
+      r = q `rem` p
   in if r == 0
     then True
     else False
@@ -58,6 +58,25 @@ pswTest p
   | otherwise = False
   where e = fermatTest p
         f = fibsTest p
+        
+-------------------------------------------------
+-- Lucas-Lehmer Mersenne primality test
+-------------------------------------------------
+        
+lucasLehmer' :: Integer -> Integer -> Integer -> Integer
+lucasLehmer' s m c =
+  let s' = (s^2 - 2) `rem` m
+  in if c == 0
+    then s
+    else lucasLehmer' s' m $ c-1
+
+lucasLehmer :: Integer -> Integer -> Primality
+lucasLehmer p e
+  | prime p e == Composite = Composite
+  | s == 0 = Prime
+  | s /= 0 = Composite
+  where m = 2^p-1
+        s = lucasLehmer' 4 m $ p-2
         
 -------------------------------------------------
 -- Miller-Rabin Primality Test related functions
@@ -79,7 +98,7 @@ innerLoop :: Integer -> Integer -> Integer -> Primality
 innerLoop n x r
   | r == 0 || y == 1  = Composite
   | y == n-1          = Continue
-  | otherwise         = innerLoop n y (r-1)
+  | otherwise         = innerLoop n y $ r-1
   where y = modExp x 2 n
   
 witnessLoop :: Integer -> Integer -> Integer -> Integer -> Integer -> Primality

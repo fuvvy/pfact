@@ -13,7 +13,7 @@ import Data.Bits
 lcgLehmer :: Integer -> Integer
 lcgLehmer a
   | a < 1 = lcgLehmer 1
-  | otherwise = 48271*a `mod` 2147483647
+  | otherwise = 48271*a `rem` 2147483647
 
 safeMod' :: Integer -> Integer -> Integer
 safeMod' n p
@@ -26,9 +26,10 @@ safeMod n = safeMod' n 1
 
 -- Fast modular exponentiation
 modExp :: Integer -> Integer -> Integer -> Integer
-modExp b 0 m  = 1
-modExp b e m  = t * modExp ((b * b) `mod` m) (shiftR e 1) m `mod` m
-              where t = if testBit e 0 then b `mod` m else 1
+modExp b e m
+  | e == 0    = 1
+  | otherwise = t * modExp ((b * b) `rem` m) (shiftR e 1) m `rem` m
+  where t = if testBit e 0 then b `rem` m else 1
 
 -- Pseudorandom numbers in the range [a,b] given seed 's'
 -- Keep picking until one is found within the desired range
@@ -39,7 +40,7 @@ safeRange a b s
   | c >= a && c <= b = c
   | otherwise = safeRange a b r
   where r = lcgLehmer s
-        c = r `mod` (safeMod b)
+        c = r `rem` (safeMod b)
         
 -- Pseudorandom numbers in the range [a,b] given seed 's'
 -- Map seed into the desired range using a modulus
@@ -47,7 +48,7 @@ safeRange a b s
 riskRange :: Integer -> Integer -> Integer -> Integer
 riskRange a b s =
   let n = b - a + 1
-      i = s `mod` n
+      i = s `rem` n
   in a + i
 
 -- A simple set of tests for determining the period of a given 
