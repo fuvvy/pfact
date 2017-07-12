@@ -33,11 +33,11 @@ prho' n x y
         p = gcd (abs (b-a)) n
 
 prho :: Integer -> Integer -> Integer -> Integer
-prho n s t
+prho n s c
 --prho n s t | trace ("prho " ++ show n ++ " " ++ show s ++ " " ++ show t) False = undefined
-  | t == 0 = n
+  | c == 0 = n
   | q == ProbablyPrime = n
-  | p == Nothing = prho n (lcgLehmer s) $ t-1 -- Pollard's Rho failed so permute the constant and try again
+  | p == Nothing = prho n (lcgLehmer s) $ c-1 -- Pollard's Rho failed so permute the constant and try again
   | otherwise = fromJust p
   where q = prime n s
         p = prho' n s s

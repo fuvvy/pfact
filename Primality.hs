@@ -11,14 +11,14 @@ data Primality = Composite | ProbablyPrime | Prime | Continue deriving (Show, Eq
 ----------------------------------------
 
 -- Fast, tail-recursive Fibonacci function
-fibsT :: Integer -> Integer -> Integer -> Integer
-fibsT n a b = 
+fibs' :: Integer -> Integer -> Integer -> Integer
+fibs' n a b = 
   if n == 0
     then a
-    else fibsT (n-1) b $ a+b
+    else fibs' (n-1) b $ a+b
 
 fibs :: Integer -> Integer
-fibs n = fibsT n 0 1
+fibs n = fibs' n 0 1
 
 -- Pseudorandom search for a coprime
 findCoprime' :: Integer -> Integer -> Integer
@@ -71,8 +71,8 @@ lucasLehmer' s m c =
     else lucasLehmer' s' m $ c-1
 
 lucasLehmer :: Integer -> Integer -> Primality
-lucasLehmer p e
-  | prime p e == Composite = Composite
+lucasLehmer p seed
+  | prime p seed == Composite = Composite
   | s == 0 = Prime
   | s /= 0 = Composite
   where m = 2^p-1
@@ -95,16 +95,16 @@ getRD :: Integer -> (Integer, Integer)
 getRD n = getRD' n 1
       
 innerLoop :: Integer -> Integer -> Integer -> Primality
-innerLoop n x r
-  | r == 0 || y == 1  = Composite
+innerLoop n x c
+  | c == 0 || y == 1  = Composite
   | y == n-1          = Continue
-  | otherwise         = innerLoop n y $ r-1
+  | otherwise         = innerLoop n y $ c-1
   where y = modExp x 2 n
   
 witnessLoop :: Integer -> Integer -> Integer -> Integer -> Integer -> Primality
-witnessLoop n r d s k
-  | k == 0                              = ProbablyPrime
-  | x == 1 || x == n-1 || l == Continue = (witnessLoop n r d) t $ k-1
+witnessLoop n r d s c
+  | c == 0                              = ProbablyPrime
+  | x == 1 || x == n-1 || l == Continue = (witnessLoop n r d) t $ c-1
   | otherwise                           = Composite
   where t = lcgLehmer s
         a = safeRange 2 (n-2) t
@@ -112,9 +112,9 @@ witnessLoop n r d s k
         l = innerLoop n x $ r-1
 
 millerRabin' :: Integer -> Integer -> Integer -> Primality
-millerRabin' p s k =
+millerRabin' p s c =
   let (r,d) = getRD $ p-1
-  in witnessLoop p r d s k
+  in witnessLoop p r d s c
   
 -- Test with:
 -- map primalityMillerRabin (take 50 $ filter odd [5..])
