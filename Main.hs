@@ -11,6 +11,7 @@ module Main where
 
 import System.Console.CmdArgs
 import PFact
+import Primality
 
 data Options = Options {
     num :: Integer,
@@ -40,6 +41,8 @@ pretty x
 
 main :: IO ()
 main = do
-  Options{..} <- cmdArgs options
-  putStrLn . pretty . pfact num $ seed
---  let p = 2^86243-1 in putStrLn . show . prime $ p
+--  Options{..} <- cmdArgs options
+--putStrLn . pretty . pfact num $ seed
+--putStrLn . show . lucasLehmer 110503 $ 5489439
+  putStrLn . show . lucasLehmer 1279 $ 5489439
+--  let p = 2^110503-1 in putStrLn . show . prime p $ 5489439

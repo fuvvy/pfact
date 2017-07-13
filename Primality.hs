@@ -1,6 +1,9 @@
-module Primality ( prime, Primality(..) ) where
+{-# LANGUAGE MagicHash #-}
+module Primality ( prime, lucasLehmer, Primality(..) ) where
 
 import Prelude
+import Data.Bits
+
 import SafeRand
 
 rounds = 1
@@ -62,21 +65,53 @@ pswTest p
 -------------------------------------------------
 -- Lucas-Lehmer Mersenne primality test
 -------------------------------------------------
+
+-- rolling our own integer log2 because Haskell's sucks
+bitlen' :: Integer -> Integer -> Integer
+bitlen' n a
+  | b == n = a+1
+  | b >  n = a
+  | b <  n = bitlen' n $ a+1
+  where b = 2^a
+
+bitlen :: Integer -> Integer
+bitlen n = bitlen' n 1
+
+-- calculating (s^2 - 2) mod m repeatedly with gigantic moduli is slow
+-- fast mod trick: wikipedia.org/wiki/Lucas-Lehmer_primality_test#Time_complexity
+fastMersenneMod :: Integer -> Integer -> Integer
+fastMersenneMod k n
+  | c <= n = k
+  | g == m = 0
+  | otherwise = fastMersenneMod ((k `rem` 2^n) + (k `div` 2^n)) n
+  where c = bitlen k
+        m = 2^n-1
+        g = gcd k m
+        
+fastMersenneMod2 :: Integer -> Integer -> Integer
+fastMersenneMod2 k n
+  | c <= n = k
+  | g == m = 0
+  | otherwise = fastMersenneMod2 (least + rest) n
+  where c = bitlen k
+        m = 2^n-1
+        g = gcd k m
+        rest = shiftR k (fromInteger n)
+        least = xor k (shiftL rest (fromInteger n))
         
 lucasLehmer' :: Integer -> Integer -> Integer -> Integer
-lucasLehmer' s m c =
-  let s' = (s^2 - 2) `rem` m
+lucasLehmer' s p c =
+  let s' = fastMersenneMod (s^2-2) p
   in if c == 0
     then s
-    else lucasLehmer' s' m $ c-1
+    else lucasLehmer' s' p $ c-1
 
 lucasLehmer :: Integer -> Integer -> Primality
 lucasLehmer p seed
   | prime p seed == Composite = Composite
   | s == 0 = Prime
   | s /= 0 = Composite
-  where m = 2^p-1
-        s = lucasLehmer' 4 m $ p-2
+  where s = lucasLehmer' 4 p $ p-2
         
 -------------------------------------------------
 -- Miller-Rabin Primality Test related functions
