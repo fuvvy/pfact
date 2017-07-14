@@ -6,6 +6,9 @@ import Data.Bits
 
 import SafeRand
 
+--import Debug.Trace
+--debug = (flip trace) False
+
 rounds = 1
 data Primality = Composite | ProbablyPrime | Prime | Continue deriving (Show, Eq, Enum)
 
@@ -67,32 +70,55 @@ pswTest p
 -------------------------------------------------
 
 -- rolling our own integer log2 because Haskell's sucks
+
+-- Fastest
 bitlen' :: Integer -> Integer -> Integer
+--bitlen' n a b | trace ("bitlen' " ++ show n ++ " " ++ show a) False = undefined
 bitlen' n a
   | b == n = a+1
   | b >  n = a
   | b <  n = bitlen' n $ a+1
-  where b = 2^a
+  where b = shiftL 1 (fromIntegral a)
 
 bitlen :: Integer -> Integer
 bitlen n = bitlen' n 1
 
+--Faster
+bitlen_div' :: Integer -> Integer -> Integer
+bitlen_div' a b
+  | b == 1    = 0
+  | otherwise = 1 + bitlen_div' a (b `div` a)
+
+bitlen_div :: Integer -> Integer
+bitlen_div n = (bitlen_div' 2 n) + 1
+
+--Slowest
+bitlen_exp' :: Integer -> Integer -> Integer
+bitlen_exp' n a
+  | b == n = a+1
+  | b >  n = a
+  | b <  n = bitlen_exp' n $ a+1
+  where b = 2^a
+
+bitlen_exp :: Integer -> Integer
+bitlen_exp n = bitlen_exp' n 1
+
 -- calculating (s^2 - 2) mod m repeatedly with gigantic moduli is slow
--- fast mod trick: wikipedia.org/wiki/Lucas-Lehmer_primality_test#Time_complexity
-fastMersenneMod :: Integer -> Integer -> Integer
-fastMersenneMod k n
+-- fast mersenne mod trick: wikipedia.org/wiki/Lucas-Lehmer_primality_test#Time_complexity
+fmmod :: Integer -> Integer -> Integer
+fmmod k n
   | c <= n = k
   | g == m = 0
-  | otherwise = fastMersenneMod ((k `rem` 2^n) + (k `div` 2^n)) n
+  | otherwise = fmmod ((k `rem` 2^n) + (k `div` 2^n)) n
   where c = bitlen k
         m = 2^n-1
         g = gcd k m
         
-fastMersenneMod2 :: Integer -> Integer -> Integer
-fastMersenneMod2 k n
+fmmod_bitwise :: Integer -> Integer -> Integer
+fmmod_bitwise k n
   | c <= n = k
   | g == m = 0
-  | otherwise = fastMersenneMod2 (least + rest) n
+  | otherwise = fmmod_bitwise (least + rest) n
   where c = bitlen k
         m = 2^n-1
         g = gcd k m
@@ -101,7 +127,7 @@ fastMersenneMod2 k n
         
 lucasLehmer' :: Integer -> Integer -> Integer -> Integer
 lucasLehmer' s p c =
-  let s' = fastMersenneMod (s^2-2) p
+  let s' = fmmod (s^2-2) p
   in if c == 0
     then s
     else lucasLehmer' s' p $ c-1

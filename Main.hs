@@ -41,8 +41,9 @@ pretty x
 
 main :: IO ()
 main = do
---  Options{..} <- cmdArgs options
---putStrLn . pretty . pfact num $ seed
+  Options{..} <- cmdArgs options
+  putStrLn . pretty . pfact num $ seed
+--let p = 2^110503-1 in putStrLn . show . bitlen3 $ p
 --putStrLn . show . lucasLehmer 110503 $ 5489439
-  putStrLn . show . lucasLehmer 1279 $ 5489439
+--putStrLn . show . lucasLehmer 2203 $ 5489439
 --  let p = 2^110503-1 in putStrLn . show . prime p $ 5489439
