@@ -6,8 +6,8 @@ import Data.Bits
 
 import SafeRand
 
---import Debug.Trace
---debug = (flip trace) False
+import Debug.Trace
+debug = (flip trace) False
 
 rounds = 1
 data Primality = Composite | ProbablyPrime | Prime | Continue deriving (Show, Eq, Enum)
@@ -103,6 +103,50 @@ bitlen_exp' n a
 bitlen_exp :: Integer -> Integer
 bitlen_exp n = bitlen_exp' n 1
 
+bitlen3 :: Integer -> Integer
+bitlen3 n = up n 0
+
+down :: Integer -> Integer -> Integer
+down n c =
+  if (shiftL 1 (fromIntegral c)) > n
+    then down n $ c-1
+    else c+1
+   
+up :: Integer -> Integer -> Integer
+--up n c =
+up n c | trace ("up " ++ show n ++ " " ++ show c) False = undefined
+  | (shiftL 1 (2^c)) < n = up n $ c+1
+  | otherwise = down n $ 2^c
+--  if (shiftL 1 (2^c)) < n
+--    then up n $ c+1
+--    else down n $ 2^c
+
+bitlen4 n = up2 n 0
+
+--up2 n c
+up2 n c | trace ("up2 " ++ show n ++ " " ++ show c) False = undefined
+  | scale c < n && scale (c+1) > n  = (2^c) + up2 (div n (2^2^c)) 0
+  | scale c < n                     = up2 n $ c+1
+  | n < scale c                     = 1
+  | n == scale c                    = 2^c+1
+  where scale x = shiftL 1 (2^x)
+    
+--upe n witness distance
+upe n witness distance | trace ("upe " ++ show n ++ " " ++ show witness ++ " " ++ show distance) False = undefined
+--  | distance == 1 && test > n = 2^witness-1
+  | test < n  = upe n (witness+1) (distance+1)
+  | otherwise = downe n witness 0
+  where test = shiftL 1 (2^witness)
+  
+--downe n witness distance
+downe n witness distance | trace ("downe " ++ show n ++ " " ++ show witness ++ " " ++ show distance) False = undefined
+  | distance == 1 && test (witness-1) < n = (2^witness)+1
+  | test witness > n  = downe n (witness-1) (distance+1)
+  | otherwise = upe n witness 0
+  where test w = shiftR (2^(2^w)) 1 
+  
+bitlene n = upe n 0 0
+
 -- calculating (s^2 - 2) mod m repeatedly with gigantic moduli is slow
 -- fast mersenne mod trick: wikipedia.org/wiki/Lucas-Lehmer_primality_test#Time_complexity
 fmmod :: Integer -> Integer -> Integer
@@ -110,7 +154,7 @@ fmmod k n
   | c <= n = k
   | g == m = 0
   | otherwise = fmmod ((k `rem` 2^n) + (k `div` 2^n)) n
-  where c = bitlen k
+  where c = bitlen4 k
         m = 2^n-1
         g = gcd k m
         
