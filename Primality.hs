@@ -1,5 +1,9 @@
 {-# LANGUAGE MagicHash #-}
-module Primality ( prime, lucasLehmer, Primality(..) ) where
+module Primality (
+  prime,
+  llt,
+  mrt,
+  Primality(..) ) where
 
 import Prelude
 import Data.Bits
@@ -62,6 +66,17 @@ pswTest p
 -- Lucas-Lehmer Mersenne primality test
 -------------------------------------------------
 
+pow2 :: Integer -> Integer
+pow2 n = shiftL 1 (fromInteger n)
+
+-- Get most significant bits b of integer n
+msb :: Integer -> Integer -> Integer
+msb n b = shiftR n (fromInteger ((bitlen n)-b))
+
+-- Get least significant bits b of integer n
+lsb :: Integer -> Integer -> Integer
+lsb n b = (toInteger . fromInteger) ((.&.) n ((shiftL 1 (fromInteger b)-1)))
+
 -- rolling our own bit-length functions because Haskell's log2
 -- fails on large integers
 
@@ -71,10 +86,24 @@ bitlen :: Integer -> Integer
 bitlen n = iter n 0 where
   iter 1 0 = 1
   iter n c
+    | scaled < n  = iter n $ c+1
+    | scaled == n = (+1) . pow2 $ c
+    | scaled > n  = lsb_count + iter msb_left 0
+    where
+      scale f   = pow2 . pow2 $ f
+      scaled    = scale c
+      lsb_count = pow2 $ c-1
+      msb_left  = shiftR n . fromInteger . pow2 $ c-1
+    
+-- Very fast - same as bitlen but with no bit shifting
+bitlen_pow :: Integer -> Integer
+bitlen_pow n = iter n 0 where
+  iter 1 0 = 1
+  iter n c
     | scale c < n   = iter n $ c+1
     | scale c == n  = 2^c+1
     | scale c > n   = 2^(c-1) + iter (div n (2^2^(c-1))) 0
-    where scale f = shiftL 1 $ 2^f
+    where scale f = 2^2^f
     
 -- Fast - test n against 2^i until overshoot then linear drift down
 bitlen_drift :: Integer -> Integer
@@ -113,79 +142,80 @@ bitlen_exp n = iter n 1 where
     | b <  n = iter n $ a+1
     where b = 2^a
 
--- calculating (s^2 - 2) mod m repeatedly with gigantic moduli is slow
+-- Calculating (s^2 - 2) mod m repeatedly with gigantic moduli is slow
+-- For m = 2^n-1, use fmmod k n
+-- Edge case: multiple of modulus should produce 0 and not 2^n-1
+-- Assert fmmod 49146 13 = 0, not 8191
 -- fast mersenne mod trick: wikipedia.org/wiki/Lucas-Lehmer_primality_test#Time_complexity
-fmmod :: Integer -> Integer -> Integer
-fmmod k n
-  | c <= n = k
-  | g == m = 0
-  | otherwise = fmmod ((k `rem` 2^n) + (k `div` 2^n)) n
-  where c = bitlen k
-        m = 2^n-1
-        g = gcd k m
-        
-fmmod_bitwise :: Integer -> Integer -> Integer
-fmmod_bitwise k n
-  | c <= n = k
-  | g == m = 0
-  | otherwise = fmmod_bitwise (least + rest) n
-  where c = bitlen k
-        m = 2^n-1
-        g = gcd k m
-        rest = shiftR k (fromInteger n)
-        least = xor k (shiftL rest (fromInteger n))
 
-lucasLehmer :: Integer -> Integer -> Primality
-lucasLehmer p seed
+fmmod :: Integer -> Integer -> Integer -> Integer
+fmmod k n m
+  | k == m = 0
+  | c <= n = k
+  | otherwise = fmmod (lbits + hbits) n m
+  where c = bitlen k
+        lbits = lsb k n
+        hbits = msb k $ c-n
+
+-- For reference. Same as above, without any bit-shifting
+fmmod_ref :: Integer -> Integer -> Integer
+fmmod_ref k n
+  | k == m = 0
+  | c <= n = k
+  | otherwise = fmmod_ref ((k `rem` 2^n) + (k `div` 2^n)) n
+  where c = bitlen k
+        m = (pow2 n)-1
+
+-- llt - Lucas-Lehmer Test
+llt :: Integer -> Integer -> Primality
+llt p seed
   | prime p seed == Composite = Composite
   | s == 0 = Prime
   | s /= 0 = Composite
   where
     s = iter 4 p $ p-2
+    m = (pow2 p)-1
     iter s p c =
-      let s' = fmmod (s^2-2) p
+      let s' = fmmod (s^2-2) p m
       in if c == 0
         then s
         else iter s' p $ c-1
         
 -------------------------------------------------
--- Miller-Rabin Primality Test related functions
+-- Miller-Rabin Primality Test logic
 -------------------------------------------------
-
--- Every even integer can be written as 2^r*d where d is odd
-getRD :: Integer -> (Integer, Integer)
-getRD n = iter n 1 where
-  iter n r =
-    let p = 2^r
-        d = quot n p
-    in if n `rem` p == 0 && odd d
-      then (r, d)
-      else iter n $ r+1
-      
-innerLoop :: Integer -> Integer -> Integer -> Primality
-innerLoop n x c
-  | c == 0 || y == 1  = Composite
-  | y == n-1          = Continue
-  | otherwise         = innerLoop n y $ c-1
-  where y = modExp x 2 n
   
-witnessLoop :: Integer -> Integer -> Integer -> Integer -> Integer -> Primality
-witnessLoop n r d s c
-  | c == 0                              = ProbablyPrime
-  | x == 1 || x == n-1 || l == Continue = (witnessLoop n r d) t $ c-1
-  | otherwise                           = Composite
-  where t = lcgLehmer s
-        a = safeRange 2 (n-2) t
-        x = modExp a d n
-        l = innerLoop n x $ r-1
-  
--- Test with:
--- map primalityMillerRabin (take 50 $ filter odd [5..])
-millerRabin :: Integer -> Integer -> Primality
-millerRabin p s = iter p s rounds where
+-- mrt - Miller-Rabin Test
+-- Test with: map mrt (take 50 $ filter odd [5..])
+mrt :: Integer -> Integer -> Primality
+mrt p s = iter p s rounds where
   iter p s c =
-    let (r,d) = getRD $ p-1
+    let (r,d) = rd $ p-1
     in witnessLoop p r d s c
+    where
+      -- Every even integer can be written as 2^r*d where d is odd
+      rd n = iter n 1 where
+        iter n r =
+          let p = 2^r
+              d = quot n p
+          in if n `rem` p == 0 && odd d
+            then (r, d)
+            else iter n $ r+1
+      -- Search for composite witnesses 
+      witnessLoop n r d s c
+        | c == 0                              = ProbablyPrime
+        | x == 1 || x == n-1 || l == Continue = (witnessLoop n r d) t $ c-1
+        | otherwise                           = Composite
+        where
+          t = lcgLehmer s
+          a = safeRange 2 (n-2) s
+          x = modExp a d n
+          l = rloop n x $ r-1
+          rloop n x c
+            | c == 0 || y == 1  = Composite
+            | y == n-1          = Continue
+            | otherwise         = rloop n y $ c-1
+            where y = modExp x 2 n
   
 prime :: Integer -> Integer -> Primality
-prime p s = if even p then Composite else millerRabin p s
+prime p s = if even p then Composite else mrt p s
