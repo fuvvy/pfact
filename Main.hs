@@ -40,6 +40,6 @@ pretty x
 
 main :: IO ()
 main = do
---  Options{..} <- cmdArgs options
---  putStrLn . pretty . pfact num $ seed
-  putStrLn . show . llt 756839 $ 5489439
+  Options{..} <- cmdArgs options
+  putStrLn . pretty . pfact num $ seed
+--  putStrLn . show . llt 1257787 $ 5489439

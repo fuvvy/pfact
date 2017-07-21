@@ -1,4 +1,3 @@
-{-# LANGUAGE MagicHash #-}
 module Primality (
   prime,
   llt,
@@ -81,7 +80,9 @@ lsb n b = (toInteger . fromInteger) ((.&.) n ((shiftL 1 (fromInteger b)-1)))
 -- fails on large integers
 
 -- Fastest - log log n solution - log2 (# of bits)
--- recursivelly mask off log2(n) bits
+-- Recursivelly reach ahead 2^2^i until overshoot, count 2^2^(i-1),
+-- continue recursively 2^2^(i=0) with new # minus the first
+-- counted 2^2^(i-1) bits
 bitlen :: Integer -> Integer
 bitlen n = iter n 0 where
   iter 1 0 = 1
