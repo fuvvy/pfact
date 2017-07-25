@@ -9,7 +9,6 @@ import Data.Bits
 
 import SafeRand
 
-rounds = 1
 data Primality = Composite | ProbablyPrime | Prime | Continue deriving (Show, Eq, Enum)
 
 ----------------------------------------
@@ -186,10 +185,13 @@ llt p seed
 -- Miller-Rabin Primality Test logic
 -------------------------------------------------
   
+rounds :: Integer -> Integer
+rounds = floor . logBase 4 . fromInteger
+  
 -- mrt - Miller-Rabin Test
 -- Test with: map mrt (take 50 $ filter odd [5..])
 mrt :: Integer -> Integer -> Primality
-mrt p s = iter p s rounds where
+mrt p s = iter p s $ rounds p where
   iter p s c =
     let (r,d) = rd $ p-1
     in witnessLoop p r d s c
