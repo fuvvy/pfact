@@ -1,5 +1,4 @@
 module Primality (
-  prime,
   llt,
   mrt,
   Primality(..) ) where
@@ -169,7 +168,7 @@ fmmod_ref k n
 -- llt - Lucas-Lehmer Test
 llt :: Integer -> Integer -> Primality
 llt p seed
-  | prime p seed == Composite = Composite
+  | mrt p seed == Composite = Composite
   | s == 0 = Prime
   | s /= 0 = Composite
   where
@@ -186,15 +185,16 @@ llt p seed
 -------------------------------------------------
   
 rounds :: Integer -> Integer
-rounds = floor . logBase 4 . fromInteger
+rounds = ceiling . logBase 4 . fromInteger
   
 -- mrt - Miller-Rabin Test
 -- Test with: map mrt (take 50 $ filter odd [5..])
 mrt :: Integer -> Integer -> Primality
 mrt p s = iter p s $ rounds p where
   iter p s c =
-    let (r,d) = rd $ p-1
-    in witnessLoop p r d s c
+    if even p
+    then Composite
+    else let (r,d) = rd $ p-1 in witnessLoop p r d s c
     where
       -- Every even integer can be written as 2^r*d where d is odd
       rd n = iter n 1 where
@@ -219,6 +219,3 @@ mrt p s = iter p s $ rounds p where
             | y == n-1          = Continue
             | otherwise         = rloop n y $ c-1
             where y = modExp x 2 n
-  
-prime :: Integer -> Integer -> Primality
-prime p s = if even p then Composite else mrt p s

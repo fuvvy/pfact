@@ -1,70 +1,64 @@
------------------------------------------------------------------------------
+
+{------------------------------------------------------------------------------
 --
--- A small application for finding the prime factorization of a given number
--- using the very interesting Pollard's Rho algorithm. This code evolved from
--- a solution for Project Euler's third problem.
+-- A small application for testing primality and finding prime factorizations
+-- This code evolved from a solution for Project Euler's third problem.
 --
------------------------------------------------------------------------------
---{-# LANGUAGE DeriveDataTypeable, RecordWildCards #-}
-{-# LANGUAGE DeriveDataTypeable #-}
+-------------------------------------------------------------------------------}
+{-# LANGUAGE DeriveDataTypeable, RecordWildCards #-}
 module Main where
 
 import System.Console.CmdArgs
+import System.Environment (getArgs, withArgs)
+import System.Exit
 import PFact
 import Primality
 
-data Putil  = Factor {integer :: Integer, seed :: Integer}
-            | Mrt {integer :: Integer, seed :: Integer}
-            | Llt {integer :: Integer, seed :: Integer}  
+_PROGRAM_NAME     = "putil"
+_PROGRAM_VERSION  = "1.0"
+_PROGRAM_INFO     = _PROGRAM_NAME ++ " v" ++ _PROGRAM_VERSION
+_PROGRAM_DESC     = "Primality testing and prime factorization utility"
+_PROGRAM_SUMMARY  =  _PROGRAM_INFO ++ "\n" ++ _PROGRAM_DESC
+_PROGRAM_USAGE    = "Examples:\n\tputil fac 3895462145894328\n\tputil mrt 18848997157\n\tputil llt 110503"
+_COPYRIGHT = "(C) Your Name Here 2011"
+
+data Putil  = Fac {comp :: Integer, seed :: Integer}
+            | Mrt {num :: Integer, seed :: Integer}
+            | Llt {expt :: Integer, seed :: Integer}  
             deriving (Show, Data, Typeable, Eq)
 
-{-
-options :: Options
-options = Options {
-  num = 1 &= argPos 0 &= typ "NUMBER",
-  seed = 2 &= typ "SEED" &= name "s" &= help "Provide your own seed"
-}
-  &= summary "pfact v0.1, Finds the prime decomposition of a given number."
-  &= program "pfact"
--}
+seedFlag x = x &= help "Provide your own seed" &= typ "INTEGER+"
   
-factor = Factor {
-  integer = def &= typ "NUM" &= name "n" &= argPos 0,
-  seed = def &= typ "SEED" &= name "s" &= help "Provide your own seed" &= argPos 1
+factor = Fac {
+  comp = def &= typ "COMPOSITE+" &= argPos 0,
+  seed = seedFlag 2147483647
 } &= help "Find prime factors"
   
 mrtest = Mrt {
-  integer = def &= typ "NUM" &= name "n" &= argPos 0,
-  seed = def &= typ "SEED" &= name "s" &= help "Provide your own seed" &= argPos 1
-} &= help "Test for primality using Miller-Rabin"
+  num = def &= typ "INTEGER+" &= argPos 0,
+  seed = seedFlag 32416190071
+} &= help "Test for primality using ⌈log4(n)⌉ rounds of Miller-Rabin"
 
 lltest = Llt {
-  integer = def &= typ "NUM" &= name "e" &= help "Mersenne exponent" &= argPos 0,
-  seed = def &= typ "SEED" &= name "s" &= help "Provide your own seed" &= argPos 1
+  expt = def &= typ "EXPONENT+" &= argPos 0,
+  seed = seedFlag 32416189381
 } &= help "Test mersenne number for primality using Lucas-Lehmer"
 
-mode  = cmdArgsMode $ modes [factor,mrtest,lltest]
-     &= help "Prime Utility"
-     &= program "putil"
-     &= summary "putil v1.0\nPrime testing and factorization"
-
-pretty :: (Show a, Eq a, Num a) => [a] -> String
-pretty x
-  | x == [0] || x == [1] = show x ++ " is neither prime nor composite and therefore has no prime factorization"
-  | otherwise = iter x 1
-  where
-    iter [x] 1 = show x
-    iter [x] c = show x ++ "^" ++ show c
-    iter (x:y:xs) c
-      | x /= y && c > 1 = show x ++ "^" ++ show c ++ " x " ++ iter (y:xs) 1
-      | x /= y = show x ++ " x " ++ iter (y:xs) 1
-      | otherwise = iter (y:xs) $ c+1
+myModes = cmdArgsMode $ modes [factor,mrtest,lltest]
+  &= help _PROGRAM_USAGE
+  &= program _PROGRAM_NAME
+  &= summary _PROGRAM_SUMMARY
+      
+optionHandler :: Putil -> IO ()
+optionHandler opts@Fac{..}  = do
+  putStrLn . pretty . pfact comp $ seed
+optionHandler opts@Mrt{..}  = do
+  putStrLn . show . mrt num $ seed
+optionHandler opts@Llt{..}  = do
+  putStrLn . show . llt expt $ seed
 
 main :: IO ()
 main = do
-  x <- cmdArgsRun mode
- -- Options{..} <- cmdArgs options
---  Options{..} <- cmdArgs mode
---  putStrLn . pretty . pfact num $ seed
---  putStrLn . show . llt 1257787 $ 5489439
-  putStrLn . show . llt 44497 $ 5489439
+  args <- getArgs
+  opts <- (if null args then withArgs ["--help"] else id) $ cmdArgsRun myModes
+  optionHandler opts

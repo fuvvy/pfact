@@ -1,4 +1,4 @@
-module PFact (pfact) where
+module PFact (pfact, pretty) where
 
 import Prelude
 import Data.List
@@ -39,7 +39,7 @@ prho n s c
   | q == ProbablyPrime = n
   | p == Nothing = prho n (lcgLehmer s) $ c-1 -- Pollard's Rho failed so permute the constant and try again
   | otherwise = fromJust p
-  where q = prime n s
+  where q = mrt n s
         p = prho' n s s
 
 factorize :: Integer -> Integer -> [Integer]
@@ -49,6 +49,18 @@ factorize n s
   | n == z    = [n]
   | otherwise = factorize z s ++ factorize (quot n z) s
   where z = prho n s rounds
+  
+pretty :: (Show a, Eq a, Num a) => [a] -> String
+pretty x
+  | x == [0] || x == [1] = show x ++ " is neither prime nor composite and therefore has no prime factorization"
+  | otherwise = iter x 1
+  where
+    iter [x] 1 = show x
+    iter [x] c = show x ++ "^" ++ show c
+    iter (x:y:xs) c
+      | x /= y && c > 1 = show x ++ "^" ++ show c ++ " x " ++ iter (y:xs) 1
+      | x /= y = show x ++ " x " ++ iter (y:xs) 1
+      | otherwise = iter (y:xs) $ c+1
   
 pfact :: Integer -> Integer -> [Integer]
 pfact n s

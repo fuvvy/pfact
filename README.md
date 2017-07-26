@@ -1,46 +1,67 @@
-# pfact : prime factorization calculator
+# putil : primality testing and prime factorization utility
 
-`pfact` is a tiny utility for finding the prime decomposition of a number using the very interesting Pollard's rho algorithm.
+`putil` is a small utility for testing primality and finding the prime decomposition of a given integer.
 
-Simply pass it an arbitrary positive integer and the prime factorization will be output in a simplified format.
+It has three major modes:
+* `fac` find prime factorizations
+* `mrt` probabilistic test for primality using ⌈log4(n)⌉ rounds of the Miller-Rabin algorithm
+* `llt` deterministic primality test for Mersenne numbers using the Lucas-Lehmer algorithm
 
-Take the composite integer `3895462145894328`, for example:
+These three modes accept positive integers only.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`2^3 x 3^3 x 18034546971733`
+Mersenne primes are prime numbers of the form `2ᵖ-1`. In Lucas-Lehmer test mode it assumes you are passing only the Mersenne exponent `p`. Do not pass the actual value of the Mersenne number or you will be waiting for months.
 
 ## Compiling
 
-`pfact` uses the CmdArgs package so you will need to install that first.
-
+`putil` uses the CmdArgs package so you will need to install that first.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal install cmdargs`
 
 Compile with `-O2` and multi-core optimizations:
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`ghc -o pfact -O2 -threaded Main.hs`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`ghc -o putil -O2 -threaded Main.hs`
 
 ## Running
 
-If you compiled with multi-core support, run the `pfact` utility with:
-
+If you compiled with multi-core support, run the `putil` utility with
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;` +RTS -N `
+appended to the command and the Haskell runtime will automatically detect the number of cores your system has and use them when possible.
 
-The Haskell runtime will automatically detect the number of cores your system has and use them when possible.
-
-### Example
+### Examples
 
 ```
-> pfact 3895462145894328 +RTS -N
+> putil fac 3895462145894328
 2^3 x 3^3 x 18034546971733
+
+> putil mrt 18848997157
+Composite
+
+> putil llt 110503
+Prime
 ```
 
 #### Help message
 
 ```
-pfact [OPTIONS] NUMBER
+putil v1.0
+Primality testing and prime factorization utility
+
+putil [COMMAND] ... [OPTIONS]
+  Examples:
+   putil fac 3895462145894328
+   putil mrt 18848997157
+   putil llt 110503
 
 Common flags:
-  -s --seed=SEED        Provide your own seed
+  -s --seed=INTEGER+    Provide your own seed
   -? --help             Display help message
   -V --version          Print version information
      --numeric-version  Print just the version number
+
+putil fac [OPTIONS] COMPOSITE+
+  Find prime factors
+
+putil mrt [OPTIONS] INTEGER+
+  Test for primality using Miller-Rabin
+
+putil llt [OPTIONS] EXPONENT+
+  Test mersenne number for primality using Lucas-Lehmer
 ```
