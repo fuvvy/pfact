@@ -14,16 +14,16 @@ Mersenne primes are prime numbers of the form `2ᵖ-1`. In Lucas-Lehmer test mod
 ## Compiling
 
 `putil` uses the CmdArgs package so you will need to install that first.
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal install cmdargs`
 
 Compile with `-O2` and multi-core optimizations:
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`ghc -o putil -O2 -threaded Main.hs`
 
 ## Running
 
-If you compiled with multi-core support, run the `putil` utility with
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;` +RTS -N `
-appended to the command and the Haskell runtime will automatically detect the number of cores your system has and use them when possible.
+If you compiled with multi-core support, run the `putil` utility with `+RTS -N ` appended to the command and the Haskell runtime will automatically detect the number of cores your system has and use them when possible.
 
 ### Examples
 
@@ -38,7 +38,7 @@ Composite
 Prime
 ```
 
-#### Help message
+### Help message
 
 ```
 putil v1.0
