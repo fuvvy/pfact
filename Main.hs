@@ -20,7 +20,7 @@ _PROGRAM_INFO     = _PROGRAM_NAME ++ " v" ++ _PROGRAM_VERSION ++ ", " ++ _AUTHOR
 _PROGRAM_DESC     = "Primality testing and prime factorization utility"
 _PROGRAM_SUMMARY  =  _PROGRAM_INFO ++ "\n" ++ _PROGRAM_DESC
 _PROGRAM_USAGE    = "Examples:\n\tputil fac 3895462145894328\n\tputil mrt 18848997157\n\tputil llt 110503"
-_AUTHOR = "(A) github.com/fuvvy"
+_AUTHOR           = "(A) github.com/fuvvy"
 
 data Putil  = Fac {comp :: Integer, seed :: Integer}
             | Mrt {num :: Integer, seed :: Integer}
