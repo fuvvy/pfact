@@ -37,7 +37,7 @@ factor = Fac {
 mrtest = Mrt {
   num = def &= typ "INTEGER+" &= argPos 0,
   seed = seedFlag 32416190071
-} &= help "Test for primality using ⌈log4(n)⌉ rounds of Miller-Rabin"
+} &= help "Test for primality using ⌈log₄(n)⌉ rounds of Miller-Rabin"
 
 lltest = Llt {
   expt = def &= typ "EXPONENT+" &= argPos 0,

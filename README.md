@@ -4,7 +4,7 @@
 
 It has three major modes:
 * `fac` find prime factorizations
-* `mrt` probabilistic test for primality using ⌈log4(n)⌉ rounds of the Miller-Rabin algorithm
+* `mrt` probabilistic test for primality using ⌈log₄(n)⌉ rounds of the Miller-Rabin algorithm
 * `llt` deterministic primality test for Mersenne numbers using the Lucas-Lehmer algorithm
 
 These three modes accept positive integers only.
