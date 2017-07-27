@@ -5,6 +5,7 @@ module Primality (
 
 import Prelude
 import Data.Bits
+import Math.NumberTheory.Logarithms
 
 import SafeRand
 
@@ -93,6 +94,10 @@ bitlen n = iter n 0 where
       scaled    = scale c
       lsb_count = pow2 $ c-1
       msb_left  = shiftR n . fromInteger . pow2 $ c-1
+      
+-- Math.NumberTheory.Logarithms.integerLog2 solution no faster than above
+bitlen_ilog :: Integer -> Integer
+bitlen_ilog = toInteger . (+1) . integerLog2
     
 -- Very fast - same as bitlen but with no bit shifting
 bitlen_pow :: Integer -> Integer
@@ -185,7 +190,7 @@ llt p seed
 -------------------------------------------------
   
 rounds :: Integer -> Integer
-rounds = ceiling . logBase 4 . fromInteger
+rounds = toInteger . integerLogBase 4 
   
 -- mrt - Miller-Rabin Test
 -- Test with: map mrt (take 50 $ filter odd [5..])
