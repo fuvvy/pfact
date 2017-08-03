@@ -9,7 +9,7 @@ It has three major modes:
 
 These three modes accept positive integers only.
 
-Mersenne primes are prime numbers of the form `2ᵖ-1`. In Lucas-Lehmer test mode it assumes you are passing only the Mersenne exponent `p`. Do not pass the actual value of the Mersenne number or you will be waiting for months.
+Mersenne primes are prime numbers of the form `2ᵖ-1`. In Lucas-Lehmer test mode it assumes you are passing only the Mersenne exponent `p`. Do not pass the actual value of the Mersenne number or you will be waiting for eons.
 
 ## Compiling
 
