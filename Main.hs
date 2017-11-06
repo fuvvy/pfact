@@ -8,12 +8,12 @@
 {-# LANGUAGE DeriveDataTypeable, RecordWildCards #-}
 module Main where
 
---import System.Console.CmdArgs
---import System.Environment (getArgs, withArgs)
---import System.Exit
+import System.Console.CmdArgs
+import System.Environment (getArgs, withArgs)
+import System.Exit
 import PFact
 import Primality
-{-
+
 _PROGRAM_NAME     = "putil"
 _PROGRAM_VERSION  = "1.0"
 _PROGRAM_INFO     = _PROGRAM_NAME ++ " v" ++ _PROGRAM_VERSION ++ ", " ++ _AUTHOR
@@ -56,11 +56,10 @@ optionHandler opts@Mrt{..}  = do
   putStrLn . show . mrt num $ seed
 optionHandler opts@Llt{..}  = do
   putStrLn . show . llt expt $ seed
- -}
 
 main :: IO ()
 main = do
-  putStrLn . show . llt 110503 $ 825250931
-  --args <- getArgs
-  --opts <- (if null args then withArgs ["--help"] else id) $ cmdArgsRun myModes
-  --optionHandler opts
+--  putStrLn . show . llt 110503 $ 825250931
+  args <- getArgs
+  opts <- (if null args then withArgs ["--help"] else id) $ cmdArgsRun myModes
+  optionHandler opts
