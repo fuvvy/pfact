@@ -39,15 +39,16 @@ splitAtDigit n d =
 base10len :: Integer -> Integer
 base10len n = (+1) $ (toInteger (integerLog10 n))
 
--- rolling our own bit-length functions because Haskell's log2
--- fails on large integers
+-- Math.NumberTheory.Logarithms.integerLog2 solution is fastest
+bitlen :: Integer -> Integer
+bitlen = toInteger . (+1) . integerLog2
 
--- Fastest - log log n solution - log2 (# of bits)
+-- Fast - log log n solution - log2 (# of bits)
 -- Recursivelly reach ahead 2^2^i until overshoot, count 2^2^(i-1),
 -- continue recursively 2^2^(i=0) with new # minus the first
 -- counted 2^2^(i-1) bits
-bitlen :: Integer -> Integer
-bitlen n = iter n 0 where
+bitlen_shoot :: Integer -> Integer
+bitlen_shoot n = iter n 0 where
   iter 1 0 = 1
   iter n c
     | scaled < n  = iter n $ c+1
@@ -58,10 +59,6 @@ bitlen n = iter n 0 where
       scaled    = scale c
       lsb_count = pow2 $ c-1
       msb_left  = shiftR n . fromInteger . pow2 $ c-1
-      
--- Math.NumberTheory.Logarithms.integerLog2 solution no faster than above
-bitlen_ilog :: Integer -> Integer
-bitlen_ilog = toInteger . (+1) . integerLog2
     
 -- Very fast - same as bitlen but with no bit shifting
 bitlen_pow :: Integer -> Integer

@@ -13,9 +13,10 @@ Mersenne primes are prime numbers of the form `2ᵖ-1`. In Lucas-Lehmer test mod
 
 ## Compiling
 
-`putil` uses the CmdArgs package so you will need to install that first.
+The following two packages need to be installed.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal install cmdargs`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal install integer-logarithms`
 
 Compile with `-O2` and multi-core optimizations:
 
