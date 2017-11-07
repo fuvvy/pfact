@@ -13,9 +13,9 @@ Mersenne primes are prime numbers of the form `2ᵖ-1`. In Lucas-Lehmer test mod
 
 ## Compiling
 
-The `cmdargs` and `integer-logarithms` libraries are required.
+The `cmdargs`, `sscript` and `integer-logarithms` libraries are required.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal install cmdargs integer-logarithms`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal install cmdargs sscript integer-logarithms`
 
 Compile with `-O2` and multi-core optimizations:
 

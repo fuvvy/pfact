@@ -3,6 +3,7 @@ module PFact (pfact, pretty) where
 import Prelude
 import Data.List
 import Data.Maybe
+import Data.Char.SScript
 
 import SafeRand
 import Primality
@@ -53,7 +54,7 @@ factorize n s
 pretty :: (Show a, Eq a, Num a) => [a] -> String
 pretty x
   | x == [0] || x == [1] = show x ++ " is neither prime nor composite and therefore has no prime factorization"
-  | otherwise = iter x 1
+  | otherwise = formatSS $ iter x 1
   where
     iter [x] 1 = show x
     iter [x] c = show x ++ "^" ++ show c
