@@ -1,4 +1,4 @@
-module IntegerUtilities (
+module IntegerUtils (
   pow2,
   msb,
   lsb,

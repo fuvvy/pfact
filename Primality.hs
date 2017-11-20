@@ -1,12 +1,13 @@
 module Primality (
   llt,
   mrt,
+  searchPrimes,
   Primality(..) ) where
 
 import Math.NumberTheory.Logarithms
 
-import IntegerUtilities
-import SafeRand
+import IntegerUtils
+import RandomUtils
 
 data Primality = Composite | ProbablyPrime | Prime | Continue deriving (Show, Eq, Enum)
 
@@ -88,9 +89,9 @@ fmmod_ref k n
         m = (pow2 n)-1
 
 -- llt - Lucas-Lehmer Test
-llt :: Integer -> Integer -> Primality
-llt p seed
-  | mrt p seed == Composite = Composite
+llt :: Integer -> Primality
+llt p
+  | mrt p == Composite = Composite
   | s == 0 = Prime
   | s /= 0 = Composite
   where
@@ -107,33 +108,32 @@ llt p seed
 -------------------------------------------------
   
 rounds :: Integer -> Integer
-rounds = toInteger . integerLogBase 4 
+rounds = toInteger . integerLogBase 4
   
 -- mrt - Miller-Rabin Test
 -- Test with: map mrt (take 50 $ filter odd [5..])
-mrt :: Integer -> Integer -> Primality
-mrt p s = iter p s $ rounds p where
-  iter p s c =
+mrt :: Integer -> Primality
+mrt p = iter p $ rounds p where
+  iter p c =
     if even p
     then Composite
-    else let (r,d) = rd $ p-1 in witnessLoop p r d s c
+    else let (r,d) = rd $ p-1 in witnessLoop p r d c
     where
       -- Every even integer can be written as 2^r*d where d is odd
       rd n = iter n 1 where
         iter n r =
-          let p = 2^r
+          let p = pow2 r
               d = quot n p
           in if n `rem` p == 0 && odd d
             then (r, d)
             else iter n $ r+1
-      -- Search for composite witnesses 
-      witnessLoop n r d s c
+      -- Search for composite witnesses
+      witnessLoop n r d c
         | c == 0                              = ProbablyPrime
-        | x == 1 || x == n-1 || l == Continue = (witnessLoop n r d) t $ c-1
+        | x == 1 || x == n-1 || l == Continue = witnessLoop n r d $ c-1
         | otherwise                           = Composite
         where
-          t = lcgLehmer s
-          a = safeRange 2 (n-2) s
+          a = getRandRange 2 $ n-2
           x = modExp a d n
           l = rloop n x $ r-1
           rloop n x c
@@ -141,3 +141,30 @@ mrt p s = iter p s $ rounds p where
             | y == n-1          = Continue
             | otherwise         = rloop n y $ c-1
             where y = modExp x 2 n
+
+-------------------------------------------------
+-- Prime search logic
+-------------------------------------------------
+
+-- Given integer n, produce a 'primality tuple' consisting of the primality
+-- of integer n and the marked integer n
+markPrimality :: Integer -> (Primality, Integer)
+markPrimality n = (mrt n, n)
+
+-- Given bits b, return an infinite list of primality tuples where each
+-- integer is pseudo-random and of bit-length b
+generatePrimalityStream :: Integer -> [(Primality, Integer)]
+generatePrimalityStream b = map markPrimality . filter odd $ getRandBitStream b
+
+-- Search through an infinte list of primality tuples and return a list of length
+-- n consisting of prime numbers of bit-length b
+searchPrimalityStream :: Integer -> Integer -> [(Primality, Integer)] -> [Integer]
+searchPrimalityStream b n ((p,i):xs)
+   | n == 0 = []
+   | p == Composite = searchPrimalityStream b n xs
+   | p == ProbablyPrime = i : searchPrimalityStream b (n-1) xs
+
+-- Pseudo-random search through odd integers of bit-length b and return a list of
+-- probable primes of length n
+searchPrimes :: Integer -> Integer -> [Integer]
+searchPrimes b n = searchPrimalityStream b n $ generatePrimalityStream b
