@@ -109,6 +109,16 @@ llt p
   
 rounds :: Integer -> Integer
 rounds = toInteger . integerLogBase 4
+
+-- Every even integer can be written as 2^r*d where d is odd
+getrd :: Integer -> (Integer, Integer)
+getrd n = iter n 1 where
+   iter n r =
+      let p = pow2 r
+          d = quot n p
+      in if n `rem` p == 0 && odd d
+         then (r,d)
+         else iter n $ r+1
   
 -- mrt - Miller-Rabin Test
 -- Test with: map mrt (take 50 $ filter odd [5..])
@@ -117,16 +127,8 @@ mrt p = iter p $ rounds p where
   iter p c =
     if even p
     then Composite
-    else let (r,d) = rd $ p-1 in witnessLoop p r d c
+    else let (r,d) = getrd $ p-1 in witnessLoop p r d c
     where
-      -- Every even integer can be written as 2^r*d where d is odd
-      rd n = iter n 1 where
-        iter n r =
-          let p = pow2 r
-              d = quot n p
-          in if n `rem` p == 0 && odd d
-            then (r, d)
-            else iter n $ r+1
       -- Search for composite witnesses
       witnessLoop n r d c
         | c == 0                              = ProbablyPrime

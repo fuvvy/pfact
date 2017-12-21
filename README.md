@@ -16,6 +16,10 @@ In prime search mode, locating large primes can take a long time on desktop comp
 
 ## Compiling
 
+First, refresh the cabal package list.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal update`
+
 The `cmdargs`, `sscript` and `integer-logarithms` libraries are required.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cabal install cmdargs sscript integer-logarithms`
